@@ -9,24 +9,8 @@ import sys
 def record_thread(recorder):
     logging.info('recording thread started')
     recorder.record()
-    
-if __name__ == '__main__':
-    out_dir = '.'
-    logfile = os.path.join(out_dir, 'recording.log')
 
-    logging.basicConfig(level=logging.INFO,
-                        #stream=sys.stderr,
-                        filename=logfile,
-                        format='%(name)s - %(levelname)s - %(message)s')
-
-    recorder = recorder.Recorder(trigger_rms=10, out_dir=out_dir, timeout_secs=30)
-
-    t = threading.Thread(target=record_thread, args=(recorder,))
-    t.start()
-
-    delete_secs = 24 * 3600
-#    delete_secs = 60
-
+def cleanup_thread(out_dir, delete_secs):
     out_dir_fd = os.open(out_dir, os.O_RDONLY)
 
     # clean out old files
@@ -48,3 +32,25 @@ if __name__ == '__main__':
                 logging.debug(f'{file} age={age_secs} secs')
                 
         time.sleep(60)
+    
+if __name__ == '__main__':
+    out_dir = '.'
+    logfile = os.path.join(out_dir, 'recording.log')
+
+    logging.basicConfig(level=logging.INFO,
+                        #stream=sys.stderr,
+                        datefmt='%Y-%m-%d %H:%M:%S',
+                        filename=logfile,
+                        format='%(asctime)s %(name)s - %(levelname)s - %(message)s')
+
+    recorder = recorder.Recorder(trigger_rms=10, out_dir=out_dir, timeout_secs=30)
+
+    t1 = threading.Thread(target=record_thread, args=(recorder,))
+    t1.start()
+
+    delete_secs = 24 * 3600
+#    delete_secs = 60
+
+    t2 = threading.Thread(target=cleanup_thread, args=(out_dir, delete_secs))
+    t2.start()
+    

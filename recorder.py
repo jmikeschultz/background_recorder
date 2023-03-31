@@ -40,15 +40,25 @@ class Recorder:
                  cushion_secs=1,
                  trigger_rms=5,
                  frame_secs=0.25):
-        
-        self.p = pyaudio.PyAudio()
 
-        self.out_dir = out_dir
+        '''
+        parameters
+         timeout_secs: int, number of seconds to keep recording after last sound
+         out_dir: string, directory to write 'wav' files
+         rate: int, number of samples/sec
+         cushion_secs: int, number of seconds of pre- and post-sound to retain
+         trigger_rms: int, rms threshold for starting to record sound
+         frame_secs: int, length of time for each frame read from pyaudio
+        '''
+
         self.timeout_secs = timeout_secs
-        self.rate = rate
         self.cushion_secs = cushion_secs
-        self.chunk = int(rate * frame_secs)
         self.trigger_rms = trigger_rms
+
+        self.chunk = int(rate * frame_secs)
+        self.out_dir = out_dir
+        self.rate = rate
+        self.p = pyaudio.PyAudio()
 
         self.stream = self.p.open(format=FORMAT,
                         channels=CHANNELS,
@@ -154,3 +164,11 @@ class Recorder:
         wf.close()
         logging.info('writing: {}'.format(pathname))
 
+    def set_timeout(self, secs):
+        self.timeout_secs = secs
+         
+    def set_cushion(self, secs):
+        self.cushion_secs = secs
+        
+    def set_trigger(self, rms):
+        self.trigger_rms = rms
